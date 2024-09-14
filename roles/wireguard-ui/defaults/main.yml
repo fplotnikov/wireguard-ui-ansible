@@ -1,0 +1,18 @@
+---
+base_deploy_path: '/data'
+wireguard_deploy_path: '{{ base_deploy_path }}/wireguard'
+wireguard_deploy_config: '{{ wireguard_deploy_path }}/config'
+wireguard_image_tag: '14'
+wireguard_image: 'ghcr.io/wg-easy/wg-easy:{{ wireguard_image_tag }}'
+wireguard_port: '443'
+wireguard_default_dns: '8.8.8.8,8.8.4.4'
+wireguard_mtu: '1420'
+wireguard_persistent_keepalive: '25'
+wireguard_internal_subnet: '10.13.13.0'
+wireguard_ui_stats: 'true'
+# Password is literally YOUR_PASSWORD ( check README for hash creation process )
+wireguard_ui_password_hash: '$$2a$$12$$18Vzv5wrneprdOj4RhTaTOi0TXuWj30YwPMrwrvPAkjqav4BTt3nG'
+wg_nginx_path: '{{ base_deploy_path }}/nginx'
+wg_nginx_conf_path: '{{ wg_nginx_path}}/conf.d'
+wg_nginx_logs_path: '{{ wg_nginx_path}}/logs'
+wg_nginx_cert_path: '{{ wg_nginx_path}}/ssl'

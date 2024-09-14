@@ -1,0 +1,40 @@
+---
+services:
+  wg-easy:
+    environment:
+      - LANG=en
+      - WG_HOST={{ domain | default(ansible_host) }}
+      - PASSWORD_HASH={{ wireguard_ui_password_hash }}
+      - WG_PORT={{ wireguard_port }}
+      - WG_DEFAULT_DNS={{ wireguard_default_dns }}
+      - WG_MTU={{ wireguard_mtu }}
+      - WG_PERSISTENT_KEEPALIVE={{ wireguard_persistent_keepalive }}
+      - UI_TRAFFIC_STATS={{ wireguard_ui_stats }}
+      - UI_CHART_TYPE=3 # (0 Charts disabled, 1 # Line chart, 2 # Area chart, 3 # Bar chart)
+      - UI_ENABLE_SORT_CLIENTS=true
+    image: {{ wireguard_image }}
+    container_name: wg-easy
+    volumes:
+      - {{ wireguard_deploy_config }}:/etc/wireguard
+    ports:
+      - "{{ wireguard_port }}:{{ wireguard_port }}/udp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.tcp_congestion_control=bbr
+  nginx:
+    image: nginx
+    container_name: nginx
+    hostname: nginx
+    volumes:
+      - {{ wg_nginx_conf_path }}:/etc/nginx/conf.d
+      - {{ wg_nginx_logs_path }}:/var/log/nginx
+      - {{ wg_nginx_cert_path }}:/etc/nginx/ssl
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    restart: unless-stopped

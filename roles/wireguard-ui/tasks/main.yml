@@ -1,0 +1,66 @@
+---
+- name: "wireguard | Create wireguard config folder"
+  ansible.builtin.file: 
+    path: "{{ wireguard_deploy_config }}"
+    state: directory
+    owner: "{{ deploy_user | default(omit) }}"
+    recurse: yes
+
+- name: "wireguard | Create nginx folders"
+  ansible.builtin.file: 
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ deploy_user | default(omit) }}"
+    recurse: yes
+  with_items: 
+  - "{{ wg_nginx_conf_path }}"
+  - "{{ wg_nginx_logs_path }}"
+  - "{{ wg_nginx_cert_path }}"
+
+- name: "system | TCP Congestion Control"
+  ansible.posix.sysctl:
+    name: net.ipv4.tcp_congestion_control
+    value: 'bbr'
+    sysctl_set: true
+
+- name: "system | Packet Buffering"
+  ansible.posix.sysctl:
+    name: net.core.netdev_budget
+    value: '600'
+    sysctl_set: true
+
+- name: "nginx | Generate config"
+  ansible.builtin.template:
+    src: 'nginx-domain.j2'
+    dest: "{{ wg_nginx_conf_path }}/default.conf"
+    owner: "{{ deploy_user | default(omit) }}"
+  register: nginx_config
+
+- name: Deploy SSL certificates
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ wg_nginx_cert_path }}/{{ item }}"
+    mode: 0644
+  with_items:
+    - wg_nginx.pem
+    - wg_nginx.key
+
+- name: "wireguard | Generate config"
+  ansible.builtin.template:
+    src: 'docker-compose.yml.j2'
+    dest: "{{ wireguard_deploy_path }}/docker-compose.yml"
+    owner: "{{ deploy_user | default(omit) }}"
+  register: wireguard_compose
+
+- name: "docker | Stop running containers"
+  community.docker.docker_compose_v2:
+    project_src: "{{ wireguard_deploy_path }}"
+    state: absent
+  when: wireguard_compose.changed or nginx_config.changed
+
+- name: "docker | start application with compose"
+  community.docker.docker_compose_v2:
+    project_src: "{{ wireguard_deploy_path }}"
+    state: present
+  when: wireguard_compose.changed or nginx_config.changed
+
