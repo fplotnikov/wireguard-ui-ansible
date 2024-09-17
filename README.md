@@ -72,7 +72,7 @@ The following table describes the default variables used in this Ansible role:
 | `wireguard_persistent_keepalive` | '25' | Keep Alive Period for connection | 
 | `wireguard_internal_subnet` | '10.13.13.0' | Subnet for VPN IPs |
 | `wireguard_ui_stats` | 'true' | Enable UI user statistic | 
-| `wireguard_ui_password_hash` | '$$2a$$12$$18Vzv5wrneprdOj4RhTaTOi0TXuWj30YwPMrwrvPAkjqav4BTt3nG' | Hashed Admin UI password | 
+| `wireguard_ui_password_hash` | Hashed value here | Hashed Admin UI password | 
 | `wg_nginx_path` | '{{ base_deploy_path }}/nginx' | Local path for Nginx deploy |
 | `wg_nginx_conf_path` | '{{ wg_nginx_path}}/conf.d' | Local path for Nginx configuration |
 | `wg_nginx_logs_path` | '{{ wg_nginx_path}}/logs' | Local path for Nginx logs |
